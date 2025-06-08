@@ -7,7 +7,7 @@ import { create } from "zustand";
 
 export const useHouseStore = create((set, get) => ({
   houses: [],
-  isLoading: true,
+  isLoading: false,
   error: null,
   currentPage: 1,
   totalPages: 1,

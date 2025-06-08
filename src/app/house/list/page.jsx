@@ -54,7 +54,8 @@ const ShowAllHouses = () => {
     fetchClientHouses,
     currentPage,
     totalPages,
-    setCurrentPage
+    setCurrentPage,
+    deleteHouse
   } = useHouseStore();
 
   const fetchAllHousesClientView = () => {

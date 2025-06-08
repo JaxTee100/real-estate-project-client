@@ -181,14 +181,15 @@ function HouseForm({
               : "Update Product"
             : isLoading
             ? "Adding House...."
-            : "Add Product"}
+            : "Add House"}
         </Button>
       </motion.div>
     </motion.form>
   );
 }
 
-export default function SuperAdminManageProductPage() {
+// Create a separate component for the page content that uses searchParams
+function PageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const houseId = searchParams.get("id");
@@ -293,23 +294,30 @@ export default function SuperAdminManageProductPage() {
           {isEditMode ? "Edit Product" : "Add Product"}
         </motion.h1>
 
-        <Suspense fallback={<div className="text-center text-white">Loading form...</div>}>
-          {isLoadingHouse && isEditMode ? (
-            <div className="text-center text-white">Loading house data...</div>
-          ) : (
-            <HouseForm
-              formState={formState}
-              setFormState={setFormState}
-              selectedFiles={selectedFiles}
-              setSelectedFiles={setSelectedFiles}
-              isEditMode={isEditMode}
-              handleInputChange={handleInputChange}
-              handleFormSubmit={handleFormSubmit}
-              isLoading={isLoading}
-            />
-          )}
-        </Suspense>
+        {isLoadingHouse && isEditMode ? (
+          <div className="text-center text-white">Loading house data...</div>
+        ) : (
+          <HouseForm
+            formState={formState}
+            setFormState={setFormState}
+            selectedFiles={selectedFiles}
+            setSelectedFiles={setSelectedFiles}
+            isEditMode={isEditMode}
+            handleInputChange={handleInputChange}
+            handleFormSubmit={handleFormSubmit}
+            isLoading={isLoading}
+          />
+        )}
       </motion.div>
     </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function SuperAdminManageProductPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-white">Loading page...</div>}>
+      <PageContent />
+    </Suspense>
   );
 }
