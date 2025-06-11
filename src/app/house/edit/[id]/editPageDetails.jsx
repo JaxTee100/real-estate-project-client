@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useHouseStore } from "@/store/useHouseStore";
-import HouseForm from "@/components/house/HouseForm";
+import HouseForm from "@/components/house/houseForm";
 import Image from "next/image";
 import banner from '../../../../../public/assets/images/home-page.png';
 
