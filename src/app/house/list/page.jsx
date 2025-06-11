@@ -7,6 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { motion } from 'framer-motion';
+import {toast} from 'sonner'
 
 import {
   Select,
@@ -17,16 +18,18 @@ import {
 } from '@/components/ui/select';
 import { AlignJustify, ChevronLeft, ChevronRight, LayoutGrid } from 'lucide-react';
 import ListCard from '@/components/house/listDisplayCard';
+import { Input } from '@/components/ui/input';
 
 const ShowAllHouses = () => {
   const router = useRouter();
-  const [priceRange, setPriceRange] = useState([0, 1000]);
+  
   const [sortBy, setSortBy] = useState("price");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [priceRange, setPriceRange] = useState([0, 10000]);
   const [realEstateTypes, setRealEstateTypes] = useState({
     houses: false,
     condos: false,
-    apartments: true,
+    apartments: false,
     commercial: false,
   });
   const [selectedRooms, setSelectedRooms] = useState(2);
@@ -49,8 +52,6 @@ const ShowAllHouses = () => {
 
   const {
     houses,
-    isLoading,
-    error,
     fetchClientHouses,
     currentPage,
     totalPages,
@@ -73,7 +74,6 @@ const ShowAllHouses = () => {
   };
 
   useEffect(() => {
-
 
     fetchAllHousesClientView();
     console.log("houses", houses)
@@ -105,16 +105,17 @@ const ShowAllHouses = () => {
   };
 
   async function handleDeleteHouse(id) {
-    if (window.confirm("Are you sure you want to delete this house?")) {
-      const result = await deleteHouse(id);
-      if (result) {
-        toast({
-          title: "House deleted successfully",
-        });
-        fetchClientHouses();
-      }
+  if (window.confirm("Are you sure you want to delete this house?")) {
+    try {
+      await deleteHouse(id); // Zustand already updates state optimistically
+      toast.success("House deleted successfully");
+      // Optional: Force-refresh to ensure consistency
+      await fetchClientHouses();
+    } catch (error) {
+      toast.error("Failed to delete house");
     }
   }
+}
   const FilterSection = () => (
     <div className='w-full p-4 space-y-8 bg-white rounded-lg shadow-md'>
       {/* Price Filter */}
@@ -128,13 +129,13 @@ const ShowAllHouses = () => {
           step={10}
         />
         <div className="flex justify-between mt-2">
-          <input
+          <Input
             type="number"
             value={priceRange[0]}
             onChange={(e) => setPriceRange([+e.target.value, priceRange[1]])}
             className="border rounded px-2 py-1 w-1/2 mr-2"
           />
-          <input
+          <Input
             type="number"
             value={priceRange[1]}
             onChange={(e) => setPriceRange([priceRange[0], +e.target.value])}
@@ -253,7 +254,7 @@ const ShowAllHouses = () => {
               layout
               className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
             >
-              {houses?.length > 0 ? (
+              {houses.length > 0 ? (
                 houses.map(house => (
                   <motion.div
                     key={house.id}
@@ -262,13 +263,14 @@ const ShowAllHouses = () => {
                     transition={{ duration: 0.3 }}
                   >
                     <HouseDisplayCard
-                      house={house}
+                      id={house.id}
                       url={house.images[0].url}
+                      address={house.address}
                       price={house.price}
                       rooms={house.rooms}
                       floors={house.floors}
                       bathrooms={house.bathrooms}
-                      handleDeleteHouse={handleDeleteHouse}
+                      handleDeleteHouse={() => handleDeleteHouse(house.id)}
                     />
                   </motion.div>
                 ))
@@ -302,6 +304,7 @@ const ShowAllHouses = () => {
                           floors={house.floors}
                           bathrooms={house.bathrooms}
                           url={house.images[0].url}
+                          handleDeleteHouse={() => handleDeleteHouse(house.id)}
                         />
                       ))}
                     </tbody>

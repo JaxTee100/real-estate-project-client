@@ -22,7 +22,7 @@ export const useHouseStore = create((set, get) => ({
         }
       );
 
-      set({ houses: response.data.data, isLoading: false });
+      set({ houses: response.data, isLoading: false });
     } catch (e) {
       set({ error: "Failed to fetch product", isLoading: false });
     }
@@ -35,59 +35,114 @@ export const useHouseStore = create((set, get) => ({
         houseData,
         {
           withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          headers: { "Content-Type": "multipart/form-data" },
         }
       );
-      set({ isLoading: false });
-      return response.data;
+
+      // Optimistically update the state with the new house
+      set((state) => ({
+        houses: [...state.houses, response.data.house], // Match backend response
+        isLoading: false,
+      }));
+
+      return response.data.house;
     } catch (e) {
-      set({ error: "Failed to create House", isLoading: false });
+      set({ error: "Failed to create house", isLoading: false });
+      throw e; // Let components handle the error
     }
   },
-  updateHouse: async (id, houseData) => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = await axios.put(
-        `${API_ROUTES.HOUSES}/${id}`,
-        houseData,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      set({ isLoading: false });
-      return response.data;
-    } catch (e) {
-      set({ error: "Failed to update House", isLoading: false });
-    }
-  },
+
+  // Fixed: Updates state after deletion
   deleteHouse: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.delete(`${API_ROUTES.HOUSES}/delete-house/${id}`, {
+      await axios.delete(`${API_ROUTES.HOUSES}/delete-house/${id}`, {
         withCredentials: true,
       });
-      set({ isLoading: false });
-      return response.data.success;
+
+      // Remove the deleted house from state
+      set((state) => ({
+        houses: state.houses.filter((house) => house.id !== id),
+        isLoading: false,
+      }));
+
+      return true;
     } catch (e) {
-      set({ error: "Failed to Delete House", isLoading: false });
+      set({ error: "Failed to delete house", isLoading: false });
+      throw e;
+    }
+  },
+
+  // Fixed: Updates state after edit
+  updateHouse: async (id, formData) => {
+  set({ isLoading: true, error: null });
+  try {
+    const response = await axios.put(
+      `${API_ROUTES.HOUSES}/update-house/${id}`,
+      formData,
+      {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+
+    if (!response?.data.success) {
+      set({error: response?.data?.message, isLoading: false});
+    }
+
+    // Ensure images array exists in response
+    const updatedHouse = {
+      ...response.data.house,
+      images: response.data.house?.images || []
+    };
+
+    set((state) => ({
+      houses: state.houses.map((house) =>
+        house.id === id ? updatedHouse : house
+      ),
+      isLoading: false,
+    }));
+
+    return response.data;
+  } catch (e) {
+    set({ 
+      error: e.response?.data?.message || "Failed to update house",
+      isLoading: false 
+    });
+    throw e;
+  }
+},
+  // In useHouseStore.js
+  deleteHouse: async (id) => {
+    set({ isLoading: true });
+    try {
+      // Optimistic update - remove immediately
+      set((state) => ({
+        houses: state.houses.filter(house => house.id !== id)
+      }));
+
+      await axios.delete(`${API_ROUTES.HOUSES}/delete-house/${id}`, {
+        withCredentials: true
+      });
+
+      return true;
+    } catch (e) {
+      // Revert if failed
+      set((state) => ({ houses: state.houses }));
+      throw e;
     }
   },
   getHouseById: async (id) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.get(`${API_ROUTES.HOUSES}/${id}`, {
+      const response = await axios.get(`${API_ROUTES.HOUSES}/get-house/${id}`, {
         withCredentials: true,
       });
       set({ isLoading: false });
-      return response.data.data;
+      return response.data.house; // Ensure this matches backend response
     } catch (e) {
-      set({ error: "Failed to get the house", isLoading: false });
-      return null;
+      set({ error: "Failed to get house", isLoading: false });
+      throw e;
     }
   },
   fetchClientHouses: async (params) => {
