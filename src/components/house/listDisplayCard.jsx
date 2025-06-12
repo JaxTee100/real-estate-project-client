@@ -7,9 +7,17 @@ import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { toast } from "sonner";
 
-const ListCard = ({id, index, address, price, rooms, bathrooms, floors, url}) => {
+const ListCard = ({id, index, address, price, rooms, bathrooms, floors, url, handleDeleteHouse}) => {
  
-
+const router = useRouter();
+  console.log('HouseDisplayCard ID:', id);
+  const handleEdit = () => {
+    if (!id) {
+      toast.error('Missing house ID');
+      return;
+    }
+    router.push(`/house/edit/${id}`);
+  };
   return (
     <motion.tr
       
@@ -53,7 +61,7 @@ const ListCard = ({id, index, address, price, rooms, bathrooms, floors, url}) =>
       <td className="p-4 text-right">
         <div className="flex justify-end gap-2">
           <Button
-            onClick={() => router.push(`/houses/add?id=${id}`)}
+            onClick={handleEdit}
             variant="ghost"
             size="icon"
           >

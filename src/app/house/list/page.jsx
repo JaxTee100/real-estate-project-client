@@ -7,7 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { motion } from 'framer-motion';
-import {toast} from 'sonner'
+import { toast } from 'sonner'
 
 import {
   Select,
@@ -22,32 +22,31 @@ import { Input } from '@/components/ui/input';
 
 const ShowAllHouses = () => {
   const router = useRouter();
-  
-  const [sortBy, setSortBy] = useState("price");
-  const [sortOrder, setSortOrder] = useState("asc");
-  const [priceRange, setPriceRange] = useState([0, 10000]);
+
+  // Filter states - initialized to null for initial load
+  const [sortBy, setSortBy] = useState(null);
+  const [sortOrder, setSortOrder] = useState(null);
+  const [priceRange, setPriceRange] = useState(null);
   const [realEstateTypes, setRealEstateTypes] = useState({
     houses: false,
     condos: false,
     apartments: false,
     commercial: false,
   });
-  const [selectedRooms, setSelectedRooms] = useState(2);
-  const [bathroomType, setBathroomType] = useState("any");
+  const [selectedRooms, setSelectedRooms] = useState(null);
+  const [bathroomType, setBathroomType] = useState(null);
   const [listDisplay, setListDisplay] = useState(false);
   const [layoutDisplay, setLayoutDisplay] = useState(true);
-
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const showLayoutDisplay = () => {
     setListDisplay(false);
     setLayoutDisplay(true);
-
   }
 
   const showListDisplay = () => {
     setListDisplay(true);
     setLayoutDisplay(false);
-
   }
 
   const {
@@ -59,26 +58,43 @@ const ShowAllHouses = () => {
     deleteHouse
   } = useHouseStore();
 
-  const fetchAllHousesClientView = () => {
-    fetchClientHouses({
-      page: currentPage,
-      limit: 5,
-      rooms: selectedRooms,
-      bathroomType,
-      minPrice: priceRange[0],
-      maxPrice: priceRange[1],
-      sortBy,
-      sortOrder,
-      estateTypes: Object.keys(realEstateTypes).filter(type => realEstateTypes[type])
-    });
+  const fetchHouses = () => {
+    // On initial load, fetch all houses without filters
+    if (isInitialLoad) {
+      fetchClientHouses({
+        page: currentPage,
+        limit: 5,
+        rooms: null,
+        bathroomType: null,
+        minPrice: null,
+        maxPrice: null,
+        sortBy: null,
+        sortOrder: null,
+        estateTypes: null
+      });
+      setIsInitialLoad(false);
+    } 
+    // After initial load, apply filters as they change
+    else {
+      fetchClientHouses({
+        page: currentPage,
+        limit: 5,
+        rooms: selectedRooms,
+        bathroomType,
+        minPrice: priceRange?.[0] || null,
+        maxPrice: priceRange?.[1] || null,
+        sortBy,
+        sortOrder,
+        estateTypes: Object.keys(realEstateTypes).filter(type => realEstateTypes[type])
+      });
+    }
   };
 
   useEffect(() => {
-
-    fetchAllHousesClientView();
-    console.log("houses", houses)
+    fetchHouses();
   }, [
     currentPage,
+    isInitialLoad,
     priceRange,
     sortBy,
     sortOrder,
@@ -91,6 +107,7 @@ const ShowAllHouses = () => {
     const [newSortBy, newSortOrder] = value.split("-");
     setSortBy(newSortBy);
     setSortOrder(newSortOrder);
+    setIsInitialLoad(false);
   };
 
   const toggleRealEstateType = (type) => {
@@ -98,6 +115,22 @@ const ShowAllHouses = () => {
       ...prev,
       [type]: !prev[type],
     }));
+    setIsInitialLoad(false);
+  };
+
+  const handlePriceChange = (newRange) => {
+    setPriceRange(newRange);
+    setIsInitialLoad(false);
+  };
+
+  const handleRoomsChange = (rooms) => {
+    setSelectedRooms(rooms);
+    setIsInitialLoad(false);
+  };
+
+  const handleBathroomChange = (type) => {
+    setBathroomType(type);
+    setIsInitialLoad(false);
   };
 
   const handlePageChange = (newPage) => {
@@ -105,25 +138,25 @@ const ShowAllHouses = () => {
   };
 
   async function handleDeleteHouse(id) {
-  if (window.confirm("Are you sure you want to delete this house?")) {
-    try {
-      await deleteHouse(id); // Zustand already updates state optimistically
-      toast.success("House deleted successfully");
-      // Optional: Force-refresh to ensure consistency
-      await fetchClientHouses();
-    } catch (error) {
-      toast.error("Failed to delete house");
+    if (window.confirm("Are you sure you want to delete this house?")) {
+      try {
+        await deleteHouse(id);
+        toast.success("House deleted successfully");
+        fetchHouses(); // Refresh the list
+      } catch (error) {
+        toast.error("Failed to delete house");
+      }
     }
   }
-}
+
   const FilterSection = () => (
     <div className='w-full p-4 space-y-8 bg-white rounded-lg shadow-md'>
       {/* Price Filter */}
       <div>
         <label className="block font-semibold mb-2">Price</label>
         <Slider
-          value={priceRange}
-          onValueChange={setPriceRange}
+          value={priceRange || [0, 1000]}
+          onValueChange={handlePriceChange}
           min={0}
           max={1000}
           step={10}
@@ -131,14 +164,14 @@ const ShowAllHouses = () => {
         <div className="flex justify-between mt-2">
           <Input
             type="number"
-            value={priceRange[0]}
-            onChange={(e) => setPriceRange([+e.target.value, priceRange[1]])}
+            value={priceRange?.[0] || 0}
+            onChange={(e) => handlePriceChange([+e.target.value, priceRange?.[1] || 1000])}
             className="border rounded px-2 py-1 w-1/2 mr-2"
           />
           <Input
             type="number"
-            value={priceRange[1]}
-            onChange={(e) => setPriceRange([priceRange[0], +e.target.value])}
+            value={priceRange?.[1] || 1000}
+            onChange={(e) => handlePriceChange([priceRange?.[0] || 0, +e.target.value])}
             className="border rounded px-2 py-1 w-1/2"
           />
         </div>
@@ -168,7 +201,7 @@ const ShowAllHouses = () => {
             <Button
               key={num}
               variant={selectedRooms === num ? "default" : "outline"}
-              onClick={() => setSelectedRooms(num)}
+              onClick={() => handleRoomsChange(num)}
             >
               {num}
             </Button>
@@ -184,24 +217,19 @@ const ShowAllHouses = () => {
             <Button
               key={type}
               variant={bathroomType === type ? "default" : "outline"}
-              onClick={() => setBathroomType(type)}
+              onClick={() => handleBathroomChange(type)}
             >
               {type.charAt(0).toUpperCase() + type.slice(1)}
             </Button>
           ))}
         </div>
       </div>
-
-
     </div>
   );
 
   return (
     <main>
-
-
       <div className='flex flex-col md:flex-row gap-6 px-4 md:px-6'>
-        {/* Filter section on top for mobile */}
         <motion.div
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
@@ -234,7 +262,10 @@ const ShowAllHouses = () => {
 
             <div className='flex gap-2 items-center w-full sm:w-auto'>
               <label className='text-gray-500'>Sort By</label>
-              <Select onValueChange={handleSortChange} value={`${sortBy}-${sortOrder}`}>
+              <Select 
+                onValueChange={handleSortChange} 
+                value={sortBy && sortOrder ? `${sortBy}-${sortOrder}` : undefined}
+              >
                 <SelectTrigger className='w-full sm:w-[150px]'>
                   <SelectValue placeholder="Sort" />
                 </SelectTrigger>
@@ -282,34 +313,34 @@ const ShowAllHouses = () => {
 
           {listDisplay && (
             <div className="w-full overflow-x-auto">
-                  <table className="min-w-full table-auto border-collapse">
-                    <thead>
-                      <tr className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
-                        <th className="p-4">House</th>
-                        <th className="p-4">Price</th>
-                        <th className="p-4">Rooms</th>
-                        <th className="p-4">Floors</th>
-                        <th className="p-4">Bathrooms</th>
-                        <th className="p-4 text-right">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {houses.map((house, index) => (
-                        <ListCard 
-                        key={index}
-                          id={house.id}
-                          index={index}
-                          address={house.address}
-                          rooms={house.rooms}
-                          floors={house.floors}
-                          bathrooms={house.bathrooms}
-                          url={house.images[0].url}
-                          handleDeleteHouse={() => handleDeleteHouse(house.id)}
-                        />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <table className="min-w-full table-auto border-collapse">
+                <thead>
+                  <tr className="bg-gray-100 text-left text-sm font-semibold text-gray-700">
+                    <th className="p-4">House</th>
+                    <th className="p-4">Price</th>
+                    <th className="p-4">Rooms</th>
+                    <th className="p-4">Floors</th>
+                    <th className="p-4">Bathrooms</th>
+                    <th className="p-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {houses.map((house, index) => (
+                    <ListCard
+                      key={index}
+                      id={house.id}
+                      url={house.images[0].url}
+                      address={house.address}
+                      price={house.price}
+                      rooms={house.rooms}
+                      floors={house.floors}
+                      bathrooms={house.bathrooms}
+                      handleDeleteHouse={() => handleDeleteHouse(house.id)}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
 
           {/* Pagination */}
@@ -349,7 +380,6 @@ const ShowAllHouses = () => {
         </motion.div>
       </div>
     </main>
-
   );
 };
 
