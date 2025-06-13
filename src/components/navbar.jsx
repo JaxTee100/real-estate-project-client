@@ -4,6 +4,7 @@ import { LogOut, Menu, X } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from 'framer-motion'
+import Link from 'next/link';
 
 const Navbar = () => {
   const router = useRouter();
@@ -26,7 +27,7 @@ const Navbar = () => {
 
   const navItems = (
     <>
-      <motion.span 
+      <motion.span
         className="text-black hover:text-gray-900 transition-colors font-semibold tracking-wider text-lg"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -40,16 +41,14 @@ const Navbar = () => {
         whileTap={{ scale: 0.95 }}
       >
         <LogOut size={18} />
-        <span className="hidden sm:inline">Logout</span>
       </motion.button>
     </>
   );
 
   return (
-    <motion.nav 
-      className={`fixed w-full z-50 px-4 sm:px-8 py-4 transition-all duration-300 ${
-        scrolled ? 'bg-slate-200/95 backdrop-blur-sm shadow-lg' : 'bg-slate-200'
-      } `}
+    <motion.nav
+      className={`fixed w-full z-50 px-4 sm:px-8 py-4 transition-all duration-300 ${scrolled ? 'bg-slate-200/95 backdrop-blur-sm shadow-lg' : 'bg-slate-200'
+        } `}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
@@ -62,7 +61,9 @@ const Navbar = () => {
           className="flex items-center"
         >
           <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent tracking-tight">
-            VERIFIED HOMES
+            <Link href='/house/list'>
+              VERIFIED HOMES
+            </Link>
           </h1>
         </motion.div>
 
