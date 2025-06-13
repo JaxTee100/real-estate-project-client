@@ -38,7 +38,7 @@ const HouseDisplayCard = ({ price, rooms, bathrooms, address, floors, url, id, h
             src={url}
             alt="House Image"
             fill
-            className="rounded w-full h-auto object-cover"
+            className="rounded w-full h-auto object-cover cursor-pointer"
             priority
             onClick={() => router.push(`/house/list/${id}`)}
           />

@@ -106,7 +106,7 @@ function Registerpage() {
                   >
                     <div className="text-center mb-10 opacity-60">
                       <h1 className="text-3xl font-bold tracking-widest text-white">
-                        BEstate
+                        Verified Homes
                       </h1>
                     </div>
         

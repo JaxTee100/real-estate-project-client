@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import EditHouseDetailsSkeleton from "./editPageSkeleton";
+import { EditHouseSkeleton } from "./editPageSkeleton";
 import EditHousePageDetails from "./editPageDetails";
 
 function EditPage({ params }) {
   return (
-    <Suspense fallback={<EditHouseDetailsSkeleton />}>
+    <Suspense fallback={<EditHouseSkeleton />}>
       <EditHousePageDetails houseId={params.id} />
     </Suspense>
   );
