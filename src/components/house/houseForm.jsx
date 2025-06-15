@@ -1,12 +1,14 @@
 "use client";
 import Image from "next/image";
-import { Upload, Trash2 } from "lucide-react";
+import { Upload, Trash2, Plus, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useState } from "react";
 
 const fadeInUp = {
     hidden: { opacity: 0, y: 40 },
@@ -33,9 +35,10 @@ export default function HouseForm({
     existingImages,
     setExistingImages,
     deletedImages,
-    setDeletedImages // Add this prop
+    setDeletedImages
 }) {
     const MAX_IMAGES = 5;
+    const [newFeature, setNewFeature] = useState("");
 
     const handleFileChange = (e) => {
         if (!e.target.files) return;
@@ -58,7 +61,6 @@ export default function HouseForm({
     };
 
     const handleDeleteExistingImage = (image) => {
-        // Add to deleted images array
         setDeletedImages([...deletedImages, image.publicId || image.url]);
         toast.success("Image marked for deletion. Submit form to confirm.");
     };
@@ -71,6 +73,25 @@ export default function HouseForm({
     const getRemainingImageSlots = () => {
         const totalCurrentImages = existingImages.length - deletedImages.length + selectedFiles.length;
         return MAX_IMAGES - totalCurrentImages;
+    };
+
+    const handleAddFeature = () => {
+        if (newFeature.trim() === "") {
+            toast.error("Please enter a feature");
+            return;
+        }
+        setFormState(prev => ({
+            ...prev,
+            features: [...(prev.features || []), newFeature.trim()]
+        }));
+        setNewFeature("");
+    };
+
+    const handleRemoveFeature = (index) => {
+        setFormState(prev => ({
+            ...prev,
+            features: prev.features.filter((_, i) => i !== index)
+        }));
     };
 
     return (
@@ -169,7 +190,7 @@ export default function HouseForm({
             )}
 
             {/* Rest of your form fields */}
-            {["address", "rooms", "floors", "bathrooms"].map((field, i) => (
+            {["address", "rooms", "floors", "bathrooms", "area"].map((field, i) => (
                 <motion.div
                     key={field}
                     variants={fadeInUp}
@@ -178,6 +199,7 @@ export default function HouseForm({
                 >
                     <Label className="text-gray-300">
                         {field.charAt(0).toUpperCase() + field.slice(1)}
+                        {field === "area" && " (sq ft)"}
                     </Label>
                     <Input
                         name={field}
@@ -255,7 +277,65 @@ export default function HouseForm({
                 />
             </motion.div>
 
-            <motion.div variants={fadeInUp} custom={12} className="col-span-full z-10">
+            {/* About Section */}
+            <motion.div
+                variants={fadeInUp}
+                custom={11}
+                className="bg-black/40 backdrop-blur-sm p-4 rounded-xl shadow-inner border border-gray-700 col-span-full"
+            >
+                <Label className="text-gray-300">About the Property</Label>
+                <Textarea
+                    name="about"
+                    value={formState.about || ""}
+                    onChange={handleInputChange}
+                    placeholder="Describe the property in detail..."
+                    rows={4}
+                    className="mt-1 bg-black border-gray-600 text-white focus:ring-gray-400"
+                />
+            </motion.div>
+
+            {/* Features Section */}
+            <motion.div
+                variants={fadeInUp}
+                custom={12}
+                className="bg-black/40 backdrop-blur-sm p-4 rounded-xl shadow-inner border border-gray-700 col-span-full"
+            >
+                <Label className="text-gray-300">Features</Label>
+                <div className="flex gap-2 mt-2">
+                    <Input
+                        value={newFeature}
+                        onChange={(e) => setNewFeature(e.target.value)}
+                        placeholder="Add a feature (e.g. Swimming pool)"
+                        className="flex-1 bg-black border-gray-600 text-white focus:ring-gray-400"
+                    />
+                    <Button
+                        type="button"
+                        onClick={handleAddFeature}
+                        className="bg-gray-800 hover:bg-gray-700"
+                    >
+                        <Plus size={16} />
+                    </Button>
+                </div>
+                
+                {formState.features?.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        {formState.features.map((feature, index) => (
+                            <div key={index} className="flex items-center gap-1 bg-gray-800 px-3 py-1 rounded-full">
+                                <span className="text-sm">{feature}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveFeature(index)}
+                                    className="text-gray-400 hover:text-white"
+                                >
+                                    <X size={14} />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </motion.div>
+
+            <motion.div variants={fadeInUp} custom={13} className="col-span-full z-10">
                 <Button
                     type="submit"
                     className="w-full border bg-gray-800 hover:bg-white hover:text-black text-white rounded-xl py-2 shadow-md transition-all duration-300"

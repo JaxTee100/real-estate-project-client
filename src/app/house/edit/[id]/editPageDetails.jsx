@@ -17,6 +17,9 @@ export default function EditHousePageDetails({ houseId }) {
     rooms: "",
     floors: "",
     bathrooms: "",
+    area: "",
+    about: "",
+    features: [],
     estatetype: "house",
     bathroomType: "any",
   });
@@ -47,6 +50,9 @@ export default function EditHousePageDetails({ houseId }) {
           rooms: house.rooms?.toString() || "",
           floors: house.floors?.toString() || "",
           bathrooms: house.bathrooms?.toString() || "",
+          area: house.area?.toString() || "",
+          about: house.about || "",
+          features: house.features || [],
           estatetype: house.estatetype || "house",
           bathroomType: house.bathroomType || "any",
         });
@@ -75,20 +81,31 @@ export default function EditHousePageDetails({ houseId }) {
     try {
       const formData = new FormData();
 
+      // Append all form fields
       Object.entries(formState).forEach(([key, value]) => {
-        formData.append(key, value);
+        if (key === "features") {
+          // Handle features array separately
+          formState.features.forEach((feature, index) => {
+            formData.append(`features[${index}]`, feature);
+          });
+        } else {
+          formData.append(key, value);
+        }
       });
 
+      // Handle existing images
       existingImages.forEach((img) => {
         if (!deletedImages.includes(img.publicId || img.url)) {
           formData.append("existingImages", img.publicId || img.url);
         }
       });
 
+      // Handle deleted images
       deletedImages.forEach((imgId) => {
         formData.append("deletedImages", imgId);
       });
 
+      // Handle new images
       selectedFiles.forEach((file) => {
         formData.append("images", file);
       });
@@ -99,6 +116,9 @@ export default function EditHousePageDetails({ houseId }) {
       if (result?.success) {
         toast.success("House updated successfully");
         router.push("/house/list");
+        router.refresh();
+      } else {
+        toast.error(result?.error || "Failed to update house");
       }
     } catch (error) {
       console.error("Update error:", error);
@@ -107,7 +127,15 @@ export default function EditHousePageDetails({ houseId }) {
   };
 
   if (isLoadingHouse) {
-    return <div className="text-center py-10">Loading house details...</div>;
+    return (
+      <div className="relative min-h-screen">
+        <div className="absolute inset-0 z-0">
+          <Image src={banner} alt="Background" fill className="object-cover" priority />
+          <div className="absolute inset-0 bg-black/70" />
+        </div>
+        <div className="text-center py-10 relative z-10 text-white">Loading house details...</div>
+      </div>
+    );
   }
 
   return (
@@ -116,7 +144,7 @@ export default function EditHousePageDetails({ houseId }) {
         <Image src={banner} alt="Background" fill className="object-cover" priority />
         <div className="absolute inset-0 bg-black/70" />
       </div>
-      <div className="border border-red-500 p-16 flex items-center w-full">
+      <div className="p-4 md:p-16 flex items-center w-full">
         <HouseForm
           formState={formState}
           setFormState={setFormState}

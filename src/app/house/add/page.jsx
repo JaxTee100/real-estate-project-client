@@ -18,6 +18,9 @@ export default function AddHousePage() {
     rooms: "",
     floors: "",
     bathrooms: "",
+    area: "",
+    about: "",
+    features: [],
     estatetype: "house",
     bathroomType: "any",
   });
@@ -32,14 +35,24 @@ export default function AddHousePage() {
       const check = await protectHouseFormAction();
       if (!check.success) {
         toast.error(check.error);
-        return; // Early return if validation fails
+        return;
       }
 
       const formData = new FormData();
+      
+      // Append all form fields
       Object.entries(formState).forEach(([key, value]) => {
-        formData.append(key, value);
+        if (key === "features") {
+          // Handle array separately
+          formState.features.forEach((feature, index) => {
+            formData.append(`features[${index}]`, feature);
+          });
+        } else {
+          formData.append(key, value);
+        }
       });
 
+      // Append images
       selectedFiles.forEach((file) => formData.append("images", file));
 
       const result = await createHouse(formData);
@@ -47,7 +60,7 @@ export default function AddHousePage() {
       if (result) {
         toast.success("House created successfully");
         router.push("/house/list");
-        router.refresh(); // Ensure the page refreshes to show the new house
+        router.refresh();
       } else {
         toast.error(result?.error || "Failed to create house");
       }
