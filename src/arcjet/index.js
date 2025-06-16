@@ -9,7 +9,7 @@ import arcjet, {
 } from "@arcjet/next";
 
 export const protectSignupRules = arcjet({
-  key: process.env.ARCJET_KEY,
+  key: process.env.NEXT_PUBLIC_ARCJET_KEY,
   rules: [
     protectSignup({
       email: {

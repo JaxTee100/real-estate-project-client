@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
+import { API_ROUTES } from "./utils/api";
 
 const publicRoutes = ["/register", "/login"];
 const userRoutes = ["/house/list"];
+const baseUrl = API_ROUTES.AUTH;
 
 export async function middleware(request) {
   const accessToken = request.cookies.get("accessToken")?.value;
@@ -28,7 +30,7 @@ export async function middleware(request) {
     } catch (e) {
       console.error("Token verification failed", e);
 
-      const refreshResponse = await fetch("http://localhost:3001/api/auth/refresh-token", {
+      const refreshResponse = await fetch(`${baseUrl}/refresh-token`, {
         method: "POST",
         credentials: "include",
       });

@@ -13,7 +13,6 @@ const fadeIn = {
 
 const HouseDisplayCard = ({ price, rooms, bathrooms, address, floors, url, id, handleDeleteHouse }) => {
   const router = useRouter();
-  console.log('HouseDisplayCard ID:', id);
   const handleEdit = () => {
     if (!id) {
       toast.error('Missing house ID');
