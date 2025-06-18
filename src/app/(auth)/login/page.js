@@ -45,7 +45,9 @@ const LoginPage = () => {
 
     if (result === true) {
       toast.success("Login successful!");
+      console.log("successful but might still be stuck")
       router.push("/house/list");
+      console.log("you should be in the list page")
     } else {
       toast.error(result || "Login failed");
     }

@@ -24,7 +24,6 @@ export const useAuthStore = create()(
             email,
             password,
           });
-
           set({ isLoading: false });
           return response.data.userId;
         } catch (error) {
