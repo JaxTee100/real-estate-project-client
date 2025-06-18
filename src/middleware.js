@@ -10,13 +10,13 @@ export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
   // Handle root path "/"
-  if (pathname === "/") {
-    if (accessToken) {
-      return NextResponse.redirect(new URL("/house/list", request.url));
-    } else {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-  }
+  // if (pathname === "/") {
+  //   if (accessToken) {
+  //     return NextResponse.redirect(new URL("/house/list", request.url));
+  //   } else {
+  //     return NextResponse.redirect(new URL("/login", request.url));
+  //   }
+  // }
 
   if (accessToken) {
     try {
@@ -62,3 +62,4 @@ export async function middleware(request) {
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
+
