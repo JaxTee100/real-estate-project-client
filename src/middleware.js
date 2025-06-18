@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import {  NextResponse } from "next/server";
 import { API_ROUTES } from "./utils/api";
 
 const publicRoutes = ["/register", "/login"];
@@ -20,6 +20,19 @@ export async function middleware(request) {
 
   if (accessToken) {
     try {
+      // Verify token with backend
+      const verifyResponse = await fetch(`${baseUrl}/verify-token`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`
+        }
+      });
+
+      if (!verifyResponse.ok) {
+        throw new Error("Token verification failed");
+      }
+
       // If logged in and accessing a public route, redirect to /house/list
       if (publicRoutes.includes(pathname)) {
         return NextResponse.redirect(new URL("/house/list", request.url));
@@ -30,6 +43,7 @@ export async function middleware(request) {
     } catch (e) {
       console.error("Token verification failed", e);
 
+      // Attempt to refresh token
       const refreshResponse = await fetch(`${baseUrl}/refresh-token`, {
         method: "POST",
         credentials: "include",
@@ -39,15 +53,26 @@ export async function middleware(request) {
       });
 
       if (refreshResponse.ok) {
-        // If refresh was successful, redirect to /house/list instead of continuing
-        const response = NextResponse.redirect(new URL("/house/list", request.url));
+        // Get new tokens from response
+        const data = await refreshResponse.json();
+        const newAccessToken = data.accessToken;
         
-        // Update cookies from refresh response
-        const setCookieHeader = refreshResponse.headers.get("Set-Cookie");
-        if (setCookieHeader) {
-          response.headers.set("Set-Cookie", setCookieHeader);
+        // Clone the response so we can modify it
+        const response = NextResponse.next();
+        
+        // Set the new access token
+        response.cookies.set("accessToken", newAccessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "lax",
+          path: "/"
+        });
+
+        // If we were trying to access a public route, redirect to /house/list
+        if (publicRoutes.includes(pathname)) {
+          return NextResponse.redirect(new URL("/house/list", request.url));
         }
-        
+
         return response;
       } else {
         // Only redirect to login if refresh completely fails
