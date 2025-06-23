@@ -1,10 +1,19 @@
 'use client'
+
 import { useAuthStore } from '@/store/useAuthStore'
-import { LogOut, Menu, X } from 'lucide-react'
+import { LogOut, Menu, User, X } from 'lucide-react'
 import React, { useState, useEffect } from 'react'
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from 'framer-motion'
-import Link from 'next/link';
+import Link from 'next/link'
+
+// Shadcn UI dropdown imports
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 const Navbar = () => {
   const router = useRouter();
@@ -12,9 +21,10 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   async function handleLogout() {
     await logout();
-    router.push("/login");
   }
 
   useEffect(() => {
@@ -27,27 +37,47 @@ const Navbar = () => {
 
   const navItems = (
     <>
+      {
+        isAuthenticated ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger className="outline-none focus:outline-none cursor-pointer">
+              <User className="text-gray-600 hover:text-gray-800" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-40 bg-white">
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="cursor-pointer text-red-600 hover:bg-red-50"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <motion.button
+            onClick={() => router.push('/login')}
+            className="flex items-center gap-1 bg-black text-white transition-colors font-semibold tracking-wider text-md px-4 py-2 rounded-md"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Sign In
+          </motion.button>
+        )
+      }
+
       <motion.span
-        className="text-black hover:text-gray-900 transition-colors font-semibold tracking-wider text-lg"
+        className="text-gray-600 hover:text-gray-800 transition-colors font-semibold tracking-wider text-lg"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
-        {user?.name}
+        {isAuthenticated && user?.name}
       </motion.span>
-      <motion.button
-        onClick={handleLogout}
-        className="flex items-center gap-1 text-black  hover:text-gray-900 transition-colors font-semibold tracking-wider text-lg"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <LogOut size={18} />
-      </motion.button>
     </>
   );
 
   return (
     <motion.nav
-      className={`fixed w-full z-50 px-4 sm:px-8 py-4 transition-all duration-300 ${scrolled ? 'bg-slate-200/95 backdrop-blur-sm shadow-lg' : 'bg-slate-200'
+      className={`fixed w-full z-50 px-4 sm:px-8 py-4 transition-all duration-300 ${scrolled ? 'bg-slate-100/95 backdrop-blur-sm shadow-lg' : 'bg-slate-100'
         } `}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
@@ -113,4 +143,4 @@ const Navbar = () => {
   )
 }
 
-export default Navbar
+export default Navbar;

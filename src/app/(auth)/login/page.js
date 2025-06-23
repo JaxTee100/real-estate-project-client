@@ -45,9 +45,7 @@ const LoginPage = () => {
 
     if (result === true) {
       toast.success("Login successful!");
-      console.log("successful but might still be stuck")
       router.push("/house/list");
-      console.log("you should be in the list page")
     } else {
       toast.error(result || "Login failed");
     }
@@ -69,30 +67,15 @@ const LoginPage = () => {
       </div>
 
       {/* Container */}
-      <div className="relative z-10 flex flex-col lg:flex-row w-full max-w-6xl bg-white/5 rounded-xl shadow-xl backdrop-blur-md overflow-hidden border border-white/10">
+      <div className="relative z-10 flex justify-center  w-full max-w-2xl bg-white/5 rounded-xl shadow-xl backdrop-blur-md overflow-hidden border border-white/10">
 
-        {/* Left Side (Image) */}
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          className="hidden lg:block w-1/2 relative"
-        >
-          <Image
-            src={banner}
-            alt="Register"
-            fill
-            style={{ objectFit: "cover", objectPosition: "center" }}
-            className="rounded-l-xl"
-          />
-        </motion.div>
-
+        
         {/* Right Side (Form) */}
         <motion.div
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
-          className="w-full lg:w-1/2 p-8 lg:p-16 flex flex-col justify-center"
+          className="w-full  p-8 lg:p-16 flex flex-col justify-center"
         >
           <motion.div
             initial={{ opacity: 0, y: 20 }}
