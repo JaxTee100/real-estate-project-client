@@ -17,11 +17,11 @@ import {
 
 const Navbar = () => {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, logout, isAuthenticated } = useAuthStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
 
   async function handleLogout() {
     await logout();
