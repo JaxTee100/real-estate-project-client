@@ -3,11 +3,13 @@ import axios from "axios";
 import { API_ROUTES } from "@/utils/api";
 import { useAuthStore } from "@/store/useAuthStore";
 
+
+
+
+
 export const useHouseStore = create((set, get) => {
-  const isLoggedIn = () => {
-    const { isAuthenticated } = useAuthStore.getState();
-    return isAuthenticated;
-  };
+  const { isAuthenticated } = useAuthStore.getState();
+  const hasCookie = document.cookie.includes('accessToken'); // Quick check
 
   return {
     houses: [],
@@ -18,13 +20,13 @@ export const useHouseStore = create((set, get) => {
     totalHouses: 0,
 
     fetchAllHouses: async () => {
-      if (!isLoggedIn()) return;
       set({ isLoading: true, error: null });
 
       try {
         const response = await axios.get(`${API_ROUTES.HOUSES}/get-all-houses`, {
           withCredentials: true,
         });
+        console.log("is it authenticated?", isAuthenticated);
         set({ houses: response.data, isLoading: false });
       } catch (e) {
         set({ error: "Failed to fetch houses", isLoading: false });
@@ -32,7 +34,6 @@ export const useHouseStore = create((set, get) => {
     },
 
     createHouse: async (houseData) => {
-      if (!isLoggedIn()) throw new Error("You must be logged in to create a house.");
       set({ isLoading: true, error: null });
 
       try {
@@ -58,7 +59,6 @@ export const useHouseStore = create((set, get) => {
     },
 
     deleteHouse: async (id) => {
-      if (!isLoggedIn()) throw new Error("You must be logged in to delete a house.");
       set({ isLoading: true, error: null });
 
       try {
@@ -79,7 +79,6 @@ export const useHouseStore = create((set, get) => {
     },
 
     updateHouse: async (id, formData) => {
-      if (!isLoggedIn()) throw new Error("You must be logged in to update a house.");
       set({ isLoading: true, error: null });
 
       try {
@@ -115,7 +114,6 @@ export const useHouseStore = create((set, get) => {
     },
 
     getHouseById: async (id) => {
-      if (!isLoggedIn()) throw new Error("You must be logged in to fetch house details.");
       set({ isLoading: true, error: null });
 
       try {
@@ -132,7 +130,7 @@ export const useHouseStore = create((set, get) => {
     },
 
     fetchClientHouses: async (params) => {
-      if (!isLoggedIn()) return;
+      
       set({ isLoading: true, error: null });
 
       try {

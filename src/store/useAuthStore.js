@@ -52,7 +52,7 @@ export const useAuthStore = create()(
             ? error?.response?.data?.error || "Login failed"
             : "Login failed";
 
-          set({ isLoading: false, error: errorMessage });
+          set({ isLoading: false, error: errorMessage, isAuthenticated: false });
           // RETURN the error to the caller
           return errorMessage;
         }

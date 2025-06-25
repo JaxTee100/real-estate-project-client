@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useRouter } from "next/navigation";
 import HouseDisplayCard from '@/components/house/houseDisplayCard';
 import { useHouseStore } from '@/store/useHouseStore';
+import { useAuthStore } from "@/store/useAuthStore";
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -58,6 +59,8 @@ const ShowAllHouses = () => {
     deleteHouse
   } = useHouseStore();
 
+  const { isAuthenticated } = useAuthStore();
+
   const fetchHouses = () => {
     // On initial load, fetch all houses without filters
     if (isInitialLoad) {
@@ -91,6 +94,11 @@ const ShowAllHouses = () => {
   };
 
   useEffect(() => {
+    // Ensure user is authenticated before fetching houses
+    if (!isAuthenticated) {
+      router.push('/login');
+      return; 
+    }
     fetchHouses();
   }, [
     currentPage,
