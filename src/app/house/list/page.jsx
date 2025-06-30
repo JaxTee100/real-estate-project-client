@@ -29,10 +29,10 @@ const ShowAllHouses = () => {
   const [sortOrder, setSortOrder] = useState(null);
   const [priceRange, setPriceRange] = useState(null);
   const [realEstateTypes, setRealEstateTypes] = useState({
-    houses: false,
-    condos: false,
-    apartments: false,
-    commercial: false,
+    HOUSE: false,
+    CONDO: false,
+    APARTMENT: false,
+    COMMERCIAL: false,
   });
   const [selectedRooms, setSelectedRooms] = useState(null);
   const [bathroomType, setBathroomType] = useState(null);
@@ -59,36 +59,43 @@ const ShowAllHouses = () => {
     deleteHouse
   } = useHouseStore();
 
-  const { isAuthenticated } = useAuthStore();
+  const isAuthenticated = useAuthStore();
 
   const fetchHouses = () => {
     // On initial load, fetch all houses without filters
+
+    const activeTypes = Object.keys(realEstateTypes)
+      .filter(type => realEstateTypes[type])
+      .map(type => type.toUpperCase());
+
     if (isInitialLoad) {
       fetchClientHouses({
         page: currentPage,
-        limit: 5,
+        limit: 6,
         rooms: null,
         bathroomType: null,
         minPrice: null,
         maxPrice: null,
         sortBy: null,
         sortOrder: null,
-        estateTypes: null
+        estatetype: activeTypes.length > 0 ? activeTypes : null
       });
       setIsInitialLoad(false);
-    } 
+    }
     // After initial load, apply filters as they change
     else {
       fetchClientHouses({
         page: currentPage,
-        limit: 5,
+        limit: 6,
         rooms: selectedRooms,
         bathroomType,
         minPrice: priceRange?.[0] || null,
         maxPrice: priceRange?.[1] || null,
         sortBy,
         sortOrder,
-        estateTypes: Object.keys(realEstateTypes).filter(type => realEstateTypes[type])
+        estatetype: Object.keys(realEstateTypes)
+          .filter(type => realEstateTypes[type])
+          .map(type => type.toUpperCase())
       });
     }
   };
@@ -97,7 +104,7 @@ const ShowAllHouses = () => {
     // Ensure user is authenticated before fetching houses
     if (!isAuthenticated) {
       router.push('/login');
-      return; 
+      return;
     }
     fetchHouses();
   }, [
@@ -121,7 +128,7 @@ const ShowAllHouses = () => {
   const toggleRealEstateType = (type) => {
     setRealEstateTypes((prev) => ({
       ...prev,
-      [type]: !prev[type],
+      [type.toUpperCase()]: !prev[type.toUpperCase()],
     }));
     setIsInitialLoad(false);
   };
@@ -189,13 +196,19 @@ const ShowAllHouses = () => {
       <div>
         <label className="block font-semibold mb-2">Real estate type</label>
         <div className="space-y-2">
-          {Object.keys(realEstateTypes).map((type) => (
+          {Object.entries({
+            HOUSE: "House",
+            CONDO: "Condo",
+            APARTMENT: "Apartment",
+            COMMERCIAL: "Commercial"
+          }).map(([type, label]) => (
             <div key={type} className="flex items-center space-x-2">
               <Checkbox
                 checked={realEstateTypes[type]}
                 onCheckedChange={() => toggleRealEstateType(type)}
+                id={`type-${type}`}
               />
-              <label className="capitalize">{type}</label>
+              <label htmlFor={`type-${type}`}>{label}</label>
             </div>
           ))}
         </div>
@@ -270,8 +283,8 @@ const ShowAllHouses = () => {
 
             <div className='flex gap-2 items-center w-full sm:w-auto'>
               <label className='text-gray-500'>Sort By</label>
-              <Select 
-                onValueChange={handleSortChange} 
+              <Select
+                onValueChange={handleSortChange}
                 value={sortBy && sortOrder ? `${sortBy}-${sortOrder}` : undefined}
               >
                 <SelectTrigger className='w-full sm:w-[150px]'>

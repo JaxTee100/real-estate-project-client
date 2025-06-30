@@ -1,15 +1,12 @@
 import { create } from "zustand";
 import axios from "axios";
 import { API_ROUTES } from "@/utils/api";
-import { useAuthStore } from "@/store/useAuthStore";
 
 
 
 
 
 export const useHouseStore = create((set, get) => {
-  const { isAuthenticated } = useAuthStore.getState();
-  const hasCookie = document.cookie.includes('accessToken'); // Quick check
 
   return {
     houses: [],
@@ -26,7 +23,6 @@ export const useHouseStore = create((set, get) => {
         const response = await axios.get(`${API_ROUTES.HOUSES}/get-all-houses`, {
           withCredentials: true,
         });
-        console.log("is it authenticated?", isAuthenticated);
         set({ houses: response.data, isLoading: false });
       } catch (e) {
         set({ error: "Failed to fetch houses", isLoading: false });
@@ -129,15 +125,24 @@ export const useHouseStore = create((set, get) => {
       }
     },
 
-    fetchClientHouses: async (params) => {
-      
+     fetchClientHouses: async (params) => {
       set({ isLoading: true, error: null });
 
       try {
+        // Convert estateTypes array to comma-separated string of UPPERCASE values
         const queryParams = {
           ...params,
-          estateTypes: params.estateTypes?.join(","),
+          estatetype: params.estatetype
+            ? params.estatetype.map(type => type.toUpperCase()).join(",") 
+            : undefined
         };
+
+        // Remove undefined/null parameters
+        Object.keys(queryParams).forEach(key => {
+          if (queryParams[key] === undefined || queryParams[key] === null) {
+            delete queryParams[key];
+          }
+        });
 
         const response = await axios.get(`${API_ROUTES.HOUSES}/client-houses`, {
           params: queryParams,
@@ -153,6 +158,7 @@ export const useHouseStore = create((set, get) => {
         });
       } catch (e) {
         set({ error: "Failed to fetch Houses", isLoading: false });
+        console.error("Fetch error:", e.response?.data);
       }
     },
 

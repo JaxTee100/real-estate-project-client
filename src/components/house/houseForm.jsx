@@ -207,6 +207,7 @@ export default function HouseForm({
                         onChange={handleInputChange}
                         placeholder={`Enter ${field}`}
                         type={field === "address" ? "text" : "number"}
+                        min={field !== "address" ? 0 : undefined}
                         className="mt-1 bg-black border-gray-600 text-white focus:ring-gray-400"
                     />
                 </motion.div>
@@ -273,6 +274,7 @@ export default function HouseForm({
                     onChange={handleInputChange}
                     placeholder="Enter price"
                     type="number"
+                    min={0}
                     className="mt-1 bg-black border-gray-600 text-white focus:ring-gray-400"
                 />
             </motion.div>
