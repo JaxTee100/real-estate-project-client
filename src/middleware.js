@@ -1,4 +1,4 @@
-import {  NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { API_ROUTES } from "./utils/api";
 
 const publicRoutes = ["/register", "/login", "/"];
@@ -9,18 +9,24 @@ export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
   // // Handle root path "/"
- 
+
 
   const token = request.cookies.get('accessToken')?.value;
 
   const isAuthRoute = request.nextUrl.pathname === '/login';
 
-   console.log("🔍 Middleware token:", token || "(none)");
+  console.log("🔍 Middleware token:", token || "(none)");
   console.log("🔍 Pathname:", pathname);
 
-   if (pathname === "/") {
-      return NextResponse.redirect(new URL("/house/list", request.url));
-    
+  const primaryDomain = "real-estate-project-client-iota.vercel.app";
+
+  if (request.headers.get("host") !== primaryDomain) {
+    return NextResponse.redirect(`https://${primaryDomain}${request.nextUrl.pathname}`);
+  }
+
+  if (pathname === "/") {
+    return NextResponse.redirect(new URL("/house/list", request.url));
+
   }
 
   if (!token && !isAuthRoute) {
