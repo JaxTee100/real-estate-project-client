@@ -26,6 +26,7 @@ export async function middleware(request) {
   }
 
   if (token && isAuthRoute) {
+    console.log("Token found, redirecting to house list");
     return NextResponse.redirect(new URL('/house/list', request.url)); // or wherever
   }
 
