@@ -46,6 +46,9 @@ export const useAuthStore = create()(
           });
 
           set({ isLoading: false, user: response.data.user, isAuthenticated: true });
+
+          // Add this line to force redirect
+          window.location.href = "/house/list"; // Or your dashboard route
           return true;
         } catch (error) {
           const errorMessage = axios.isAxiosError(error)

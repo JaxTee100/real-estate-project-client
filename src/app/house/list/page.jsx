@@ -20,6 +20,10 @@ import {
 import { AlignJustify, ChevronLeft, ChevronRight, LayoutGrid } from 'lucide-react';
 import ListCard from '@/components/house/listDisplayCard';
 import { Input } from '@/components/ui/input';
+import AuthGuard from '@/components/auth-guard';
+
+
+
 
 const ShowAllHouses = () => {
   const router = useRouter();
@@ -404,4 +408,7 @@ const ShowAllHouses = () => {
   );
 };
 
+<AuthGuard>
+  <ShowAllHouses />
+</AuthGuard>
 export default ShowAllHouses;
