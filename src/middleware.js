@@ -15,18 +15,21 @@ export async function middleware(request) {
 
   const isAuthRoute = request.nextUrl.pathname === '/login';
 
+   console.log("🔍 Middleware token:", token || "(none)");
+  console.log("🔍 Pathname:", pathname);
+
    if (pathname === "/") {
       return NextResponse.redirect(new URL("/house/list", request.url));
     
   }
 
   if (!token && !isAuthRoute) {
-    console.log("No token found, redirecting to login");
+    console.log("⛔ No token, redirecting to /login");
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
   if (token && isAuthRoute) {
-    console.log("Token found, redirecting to house list");
+    console.log("✅ Token exists, redirecting to /house/list");
     return NextResponse.redirect(new URL('/house/list', request.url)); // or wherever
   }
 

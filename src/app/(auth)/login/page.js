@@ -45,7 +45,8 @@ const LoginPage = () => {
 
     if (result === true) {
       toast.success("Login successful!");
-      router.push("/house/list");
+      window.location.href = "/house/list";
+      router.replace("/house/list");
     } else {
       toast.error(result || "Login failed");
     }
