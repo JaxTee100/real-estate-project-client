@@ -47,6 +47,11 @@ export default function AddHousePage() {
           formState.features.forEach((feature, index) => {
             formData.append(`features[${index}]`, feature);
           });
+        }
+        else if(key === "estatetype") {
+          // Handle enum as a string
+          formData.append("estatetype", value.toUpperCase());     
+
         } else {
           formData.append(key, value);
         }
