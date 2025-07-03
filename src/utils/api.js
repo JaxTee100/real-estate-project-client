@@ -1,6 +1,6 @@
 export const API_BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3001";
 
 export const API_ROUTES = {
-  AUTH: `${API_BASE_URL}/api/auth`,
-  HOUSES: `${API_BASE_URL}/api/house`
+  AUTH: `/api/auth`,
+  HOUSES: `/api/house`
 };
