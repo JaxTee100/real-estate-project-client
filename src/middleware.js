@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { API_ROUTES } from "./utils/api";
 
-const publicRoutes = ["/register", "/login", "/"];
+const publicRoutes = ["/register", "/login"];
 const userRoutes = ["/house/list"];
 const baseUrl = API_ROUTES.AUTH;
 
@@ -13,7 +13,7 @@ export async function middleware(request) {
 
   const token = request.cookies.get('accessToken')?.value;
 
-  const isAuthRoute = request.nextUrl.pathname === '/login';
+  const isAuthRoute = publicRoutes.includes(pathname)
 
   console.log("🔍 Middleware token:", token || "(none)");
   console.log("🔍 Pathname:", pathname);
@@ -25,7 +25,7 @@ export async function middleware(request) {
 
   }
 
-  if (!token && !isAuthRoute) {
+  if (!token && !isAuthRoute ) {
     console.log("⛔ No token, redirecting to /login");
     return NextResponse.redirect(new URL('/login', request.url));
   }
