@@ -88,7 +88,15 @@ export default function EditHousePageDetails({ houseId }) {
           formState.features.forEach((feature, index) => {
             formData.append(`features[${index}]`, feature);
           });
-        } else {
+        }
+        else if (key === "estatetype") {
+          // Send multiple estatetype values if array
+          const types = Array.isArray(value) ? value : [value];
+          types.forEach((type) => {
+            formData.append("estatetype", type.toUpperCase());
+          });
+        }
+        else {
           formData.append(key, value);
         }
       });
